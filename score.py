@@ -4,7 +4,8 @@ from pathlib import Path
 
 os.makedirs("docs", exist_ok=True)
 today = datetime.date.fromisoformat(os.environ.get("TODAY", datetime.date.today().isoformat()))
-chs = [c for c in json.load(open("challenges.json")) if datetime.date.fromisoformat(c["unlock"]) <= today]
+all_chs = json.load(open("challenges.json"))
+chs = [c for c in all_chs if datetime.date.fromisoformat(c["unlock"]) <= today]
 teams = sorted(p.name for p in Path("submissions").iterdir() if (p / "agent.py").exists())
 scores = {c["id"]: {} for c in chs}
 for c in chs:
@@ -16,8 +17,11 @@ for c in chs:
             scores[c["id"]][t] = 0
 
 points = {t: 0 for t in teams}
+winners = {}
 for c in chs:
     ranked = sorted(teams, key=lambda t: -scores[c["id"]][t])
+    if ranked and scores[c["id"]][ranked[0]] > 0:
+        winners[c["id"]] = ranked[0]
     for t in teams:
         s = scores[c["id"]][t]
         rank = next(i for i, u in enumerate(ranked) if scores[c["id"]][u] == s)
@@ -26,24 +30,111 @@ for c in chs:
 order = sorted(teams, key=lambda t: -points[t])
 json.dump({"updated": str(today), "points": points, "scores": scores}, open("docs/results.json", "w"), indent=1)
 
-head = "".join(f"<th title='{html.escape(c['text'])}'>{html.escape(c['name'])}</th>" for c in chs)
+e = html.escape
+def day(c): return datetime.date.fromisoformat(c["unlock"]).strftime("%-d %b")
+
+doors = "".join(
+    (f"<li class=open><b>{e(c['name'])}</b><span>{e(c['text'])}</span>"
+     + (f"<em>Best: {e(winners[c['id']])}</em>" if c["id"] in winners else "<em>No entries yet</em>")
+     if c in chs else f"<li class=locked><b>Opens {day(c)}</b><span>Locked</span>")
+    + "</li>" for c in all_chs)
+
+medals = ["gold", "silver", "bronze"]
+podium = "".join(
+    f"<div class='step {medals[i]}'><span class=pname>{e(t)}</span><span class=ppts>{points[t]}</span></div>"
+    for i, t in enumerate(order[:3])) or "<p class=empty>No bots on the board yet. Be the first to deliver.</p>"
+
+head = "".join(f"<th title='{e(c['text'])}'>{e(c['name'])}<small>{day(c)}</small></th>" for c in chs)
+def cell(c, t):
+    s = scores[c["id"]][t]
+    best = max(scores[c["id"]].values()) or 1
+    cls = " class=top" if winners.get(c["id"]) == t else ""
+    return f"<td{cls} style='--h:{s / best:.2f}'>{s:g}</td>"
 rows = "".join(
-    f"<tr><td>{i+1}</td><td>{html.escape(t)}</td><td class=pts>{points[t]}</td>"
-    + "".join(f"<td>{scores[c['id']][t]:g}</td>" for c in chs) + "</tr>"
-    for i, t in enumerate(order))
-page = f"""<!doctype html><html lang=en><meta charset=utf-8>
+    f"<tr><td class=rank>{i + 1}</td><td class=team>{e(t)}</td><td class=pts>{points[t]}</td>"
+    + "".join(cell(c, t) for c in chs) + "</tr>" for i, t in enumerate(order))
+table = (f"<div class=scroll><table><tr><th>#</th><th>Team</th><th>Points</th>{head}</tr>{rows}</table></div>"
+         if teams and chs else "<p class=empty>The first challenge opens soon.</p>")
+
+page = """<!doctype html><html lang=en><meta charset=utf-8>
 <meta name=viewport content="width=device-width,initial-scale=1">
 <title>Advent of AI: Downing</title>
+<link rel=preconnect href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,700;12..96,800&display=swap" rel=stylesheet>
 <style>
-:root{{--bg:#f6f8f4;--fg:#14281d;--mut:#5b6f63;--acc:#b3202a;--line:#cfd9d1}}
-@media(prefers-color-scheme:dark){{:root{{--bg:#0f1c15;--fg:#e8f0ea;--mut:#9ab0a2;--acc:#ff6b6b;--line:#2a3d32}}}}
-body{{margin:0;background:var(--bg);color:var(--fg);font:16px/1.5 Georgia,serif;padding:2rem 1rem}}
-main{{max-width:60rem;margin:auto}}h1{{font-size:2.4rem;margin:0}}p{{color:var(--mut)}}
-.scroll{{overflow-x:auto}}table{{border-collapse:collapse;width:100%;font:14px system-ui,sans-serif}}
-th,td{{padding:.5rem .7rem;border-bottom:1px solid var(--line);text-align:right;white-space:nowrap}}
-th:nth-child(2),td:nth-child(2){{text-align:left}}.pts{{font-weight:700;color:var(--acc)}}
-</style><main><h1>Advent of AI</h1>
-<p>Santa's sleigh needs a bot. New challenge every other day. Updated {today}.</p>
-<div class=scroll><table><tr><th>#</th><th>Team</th><th>Points</th>{head}</tr>{rows}</table></div></main></html>"""
+:root{--night:#0d1530;--deep:#16204a;--snow:#f2f6fb;--mut:#9fb0d4;--gold:#f4c04e;--holly:#38b27a;--ribbon:#e4505c;--line:#27346a}
+*{box-sizing:border-box}
+body{margin:0;background:radial-gradient(1200px 600px at 80% -10%,#24306a 0,transparent 60%),var(--night);color:var(--snow);
+font:16px/1.55 "Bricolage Grotesque",system-ui,sans-serif;padding:0 1.2rem 4rem}
+main{max-width:64rem;margin:auto}
+.hero{display:grid;grid-template-columns:1.1fr .9fr;gap:2rem;align-items:center;padding:3.5rem 0 2.5rem}
+h1{font-size:clamp(2.8rem,8vw,5.2rem);line-height:.95;margin:0 0 1rem;font-weight:800;letter-spacing:-.03em}
+.lede{color:var(--mut);font-size:1.15rem;max-width:30rem;margin:0}
+.stamp{display:inline-block;margin-top:1.4rem;padding:.35rem .8rem;border:1px solid var(--line);border-radius:99px;color:var(--mut);font-size:.9rem}
+canvas{width:100%;max-width:26rem;aspect-ratio:1;justify-self:end;border-radius:1.2rem;background:var(--deep);box-shadow:0 0 0 1px var(--line),0 30px 60px #0007}
+h2{font-size:1.5rem;margin:3rem 0 1rem;letter-spacing:-.01em}
+.podium{display:flex;gap:.8rem;align-items:flex-end;flex-wrap:wrap}
+.step{flex:1 1 9rem;padding:1rem 1.1rem;border-radius:.9rem;background:var(--deep);border:1px solid var(--line);display:flex;flex-direction:column}
+.step.gold{min-height:9rem;border-color:var(--gold)}.step.silver{min-height:7.5rem}.step.bronze{min-height:6.5rem}
+.pname{font-weight:700;font-size:1.15rem;overflow-wrap:anywhere}.ppts{margin-top:auto;font-size:2.4rem;font-weight:800;color:var(--gold);line-height:1}
+.doors{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(10.5rem,1fr));gap:.7rem}
+.doors li{padding:.8rem .9rem;border-radius:.8rem;display:flex;flex-direction:column;gap:.15rem;min-height:6.5rem}
+.doors .open{background:var(--deep);border:1px solid var(--holly)}
+.doors .locked{border:1px dashed var(--line);color:var(--mut)}
+.doors span{font-size:.85rem;color:var(--mut)}.doors em{margin-top:auto;font-style:normal;font-size:.85rem;color:var(--gold)}
+.scroll{overflow-x:auto;border-radius:.9rem;border:1px solid var(--line);background:var(--deep)}
+table{border-collapse:collapse;width:100%;font-size:.95rem}
+th,td{padding:.6rem .8rem;text-align:right;white-space:nowrap;border-bottom:1px solid var(--line)}
+th{font-weight:700;color:var(--mut);vertical-align:bottom}th small{display:block;font-weight:400;font-size:.75rem}
+.rank,.team{text-align:left}.team{font-weight:700}.pts{font-weight:800;color:var(--gold);font-size:1.1rem}
+tr:last-child td{border-bottom:0}
+td[style]{background:rgba(56,178,122,calc(.08 + var(--h)*.5))}
+td.top{box-shadow:inset 0 0 0 2px var(--gold);font-weight:700}
+.empty{color:var(--mut)}
+footer{margin-top:3rem;color:var(--mut);font-size:.9rem}
+@media(max-width:700px){.hero{grid-template-columns:1fr;padding-top:2rem}canvas{justify-self:start}}
+</style>
+<main>
+<section class=hero>
+<div><h1>Advent of AI</h1>
+<p class=lede>Santa's sleigh needs a bot. Build one that finds every house, beats the blizzard, and fits the parameter budget. A new challenge opens every other day.</p>
+<span class=stamp>Updated __TODAY__</span></div>
+<canvas id=sleigh width=440 height=440 aria-label="Animated demo of a bot delivering presents"></canvas>
+</section>
+<h2>Top of the board</h2><div class=podium>__PODIUM__</div>
+<h2>The calendar</h2><ul class=doors>__DOORS__</ul>
+<h2>Full standings</h2>__TABLE__
+<footer>Daily points: 1st gets 10, down to 1 for 10th. Bright green cells are close to the day's best score, and a gold outline marks the day's winner.</footer>
+</main>
+<script>
+(()=>{const c=document.getElementById('sleigh'),g=c.getContext('2d'),N=11,S=c.width/N;
+const still=matchMedia('(prefers-reduced-motion:reduce)').matches;
+let seed=11;const rnd=()=>(seed=seed*16807%2147483647)/2147483647;
+const k=(x,y)=>x+','+y;let trees,houses,pos,route,trail,pause;
+function reset(){const f=[];for(let y=0;y<N;y++)for(let x=0;x<N;x++)f.push([x,y]);
+for(let i=f.length-1;i>0;i--){const j=Math.floor(rnd()*(i+1));[f[i],f[j]]=[f[j],f[i]]}
+pos=f.pop();trees=new Set(f.splice(0,18).map(p=>k(...p)));houses=new Set(f.splice(0,5).map(p=>k(...p)));route=[];trail=[];pause=0}
+function plan(){const q=[[pos[0],pos[1]]],prev=new Map([[k(...pos),null]]);
+while(q.length){const [x,y]=q.shift();if(houses.has(k(x,y))){const r=[];let a=k(x,y);while(prev.get(a)){r.unshift(a.split(',').map(Number));a=prev.get(a)}return r}
+for(const [dx,dy] of [[1,0],[-1,0],[0,1],[0,-1]]){const nx=x+dx,ny=y+dy,kk=k(nx,ny);
+if(nx>=0&&ny>=0&&nx<N&&ny<N&&!trees.has(kk)&&!prev.has(kk)){prev.set(kk,k(x,y));q.push([nx,ny])}}}return null}
+function draw(){g.clearRect(0,0,c.width,c.height);g.strokeStyle='#27346a';g.lineWidth=1;
+for(let i=1;i<N;i++){g.beginPath();g.moveTo(i*S,0);g.lineTo(i*S,c.height);g.moveTo(0,i*S);g.lineTo(c.width,i*S);g.stroke()}
+trail.forEach(([x,y],i)=>{g.fillStyle='rgba(228,80,92,'+(.1+.5*i/trail.length)+')';g.beginPath();g.arc((x+.5)*S,(y+.5)*S,S*.12,0,7);g.fill()});
+trees.forEach(s=>{const [x,y]=s.split(',').map(Number);g.fillStyle='#1f7a55';g.beginPath();
+g.moveTo((x+.5)*S,(y+.12)*S);g.lineTo((x+.88)*S,(y+.88)*S);g.lineTo((x+.12)*S,(y+.88)*S);g.fill()});
+houses.forEach(s=>{const [x,y]=s.split(',').map(Number);g.fillStyle='#f2f6fb';g.fillRect((x+.2)*S,(y+.42)*S,S*.6,S*.42);
+g.fillStyle='#e4505c';g.beginPath();g.moveTo((x+.12)*S,(y+.44)*S);g.lineTo((x+.5)*S,(y+.12)*S);g.lineTo((x+.88)*S,(y+.44)*S);g.fill();
+g.fillStyle='#f4c04e';g.fillRect((x+.43)*S,(y+.58)*S,S*.14,S*.14)});
+g.fillStyle='#e4505c';g.beginPath();g.roundRect((pos[0]+.18)*S,(pos[1]+.22)*S,S*.64,S*.56,S*.14);g.fill();
+g.fillStyle='#f2f6fb';g.beginPath();g.arc((pos[0]+.5)*S,(pos[1]+.42)*S,S*.12,0,7);g.fill()}
+function tick(){if(pause>0){pause--;return draw()}
+if(!houses.size){pause=14;reset();return}
+if(!route.length){route=plan();if(!route){reset();return}}
+trail.push([...pos]);if(trail.length>14)trail.shift();pos=route.shift();houses.delete(k(...pos));draw()}
+reset();draw();if(!still)setInterval(tick,170)})();
+</script></html>"""
+for key, val in {"__TODAY__": str(today), "__PODIUM__": podium, "__DOORS__": doors, "__TABLE__": table}.items():
+    page = page.replace(key, val)
 open("docs/index.html", "w").write(page)
 print("scored", len(chs), "challenges for", len(teams), "teams")
