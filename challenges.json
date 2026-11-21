@@ -1,14 +1,16 @@
 [
- {"id":"d01","unlock":"2026-12-01","name":"First Delivery","text":"Easy start: open ground, 3 houses.","width":8,"height":8,"obstacles":0,"houses":3,"max_value":1,"steps":60,"wind":0,"seeds":10},
- {"id":"d02","unlock":"2026-12-03","name":"Chimney Maze","text":"Trees block the way.","width":10,"height":10,"obstacles":0.2,"houses":4,"max_value":2,"steps":80,"wind":0,"seeds":10},
- {"id":"d03","unlock":"2026-12-05","name":"Blizzard","text":"20% of moves are blown off course.","width":10,"height":10,"obstacles":0.1,"houses":5,"max_value":2,"steps":90,"wind":0.2,"seeds":10},
- {"id":"d04","unlock":"2026-12-07","name":"Tiny Brain","text":"Parameter cap: 200.","width":12,"height":12,"obstacles":0.15,"houses":6,"max_value":3,"steps":100,"wind":0,"seeds":10,"param_cap":200},
- {"id":"d05","unlock":"2026-12-09","name":"Rush Hour","text":"Lots of houses, few steps.","width":12,"height":12,"obstacles":0.1,"houses":10,"max_value":3,"steps":60,"wind":0,"seeds":10},
- {"id":"d06","unlock":"2026-12-11","name":"Big City","text":"Large, crowded map.","width":20,"height":20,"obstacles":0.25,"houses":12,"max_value":3,"steps":200,"wind":0,"seeds":10},
- {"id":"d07","unlock":"2026-12-13","name":"Heuristics Only","text":"No learned parameters: NUM_PARAMS must be 0.","width":15,"height":15,"obstacles":0.2,"houses":8,"max_value":3,"steps":120,"wind":0.1,"seeds":10,"param_cap":0},
- {"id":"d08","unlock":"2026-12-15","name":"Whiteout","text":"35% wind. Plan for chaos.","width":15,"height":15,"obstacles":0.15,"houses":8,"max_value":3,"steps":150,"wind":0.35,"seeds":10},
- {"id":"d09","unlock":"2026-12-17","name":"Golden Presents","text":"Houses are worth up to 5. Choose wisely.","width":14,"height":14,"obstacles":0.2,"houses":8,"max_value":5,"steps":70,"wind":0,"seeds":10},
- {"id":"d10","unlock":"2026-12-19","name":"Pocket Rocket","text":"Parameter cap: 50.","width":12,"height":12,"obstacles":0.2,"houses":6,"max_value":3,"steps":100,"wind":0.1,"seeds":10,"param_cap":50},
- {"id":"d11","unlock":"2026-12-21","name":"Everything Everywhere","text":"Big, blocked and windy.","width":25,"height":25,"obstacles":0.3,"houses":15,"max_value":4,"steps":250,"wind":0.2,"seeds":10},
- {"id":"d12","unlock":"2026-12-23","name":"Christmas Eve Finale","text":"Parameter cap: 500. Everything on.","width":30,"height":30,"obstacles":0.3,"houses":20,"max_value":5,"steps":300,"wind":0.25,"seeds":10,"param_cap":500}
+ {
+  "id": "d01",
+  "unlock": "2026-12-01",
+  "name": "Sleigh Check",
+  "text": "Warm up: a small, friendly map.",
+  "width": 9,
+  "height": 9,
+  "obstacles": 0.05,
+  "houses": 4,
+  "max_value": 1,
+  "steps": 50,
+  "wind": 0,
+  "seeds": 10
+ }
 ]
