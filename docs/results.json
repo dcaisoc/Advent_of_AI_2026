@@ -2,51 +2,51 @@
  "updated": "2026-12-23",
  "points": {
   "random_bot": 111,
-  "starter_greedy": 118
+  "starter_greedy": 117
  },
  "scores": {
   "d01": {
-   "random_bot": 1.348,
+   "random_bot": 1.1,
    "starter_greedy": 3.822
   },
   "d02": {
-   "random_bot": 1.3,
+   "random_bot": 0.9,
    "starter_greedy": 1.6
   },
   "d03": {
-   "random_bot": 2.8,
+   "random_bot": 2.3,
    "starter_greedy": 3.943
   },
   "d04": {
-   "random_bot": 1.7,
+   "random_bot": 2.4,
    "starter_greedy": 2.476
   },
   "d05": {
-   "random_bot": 4.2,
+   "random_bot": 1.7,
    "starter_greedy": 7.9
   },
   "d06": {
-   "random_bot": 2.6,
+   "random_bot": 4.9,
    "starter_greedy": 2.6
   },
   "d07": {
-   "random_bot": 2.3,
+   "random_bot": 3.6,
    "starter_greedy": 2.1
   },
   "d08": {
-   "random_bot": 4.6,
+   "random_bot": 3.9,
    "starter_greedy": 8.3
   },
   "d09": {
-   "random_bot": 3.7,
+   "random_bot": 4.1,
    "starter_greedy": 5.8
   },
   "d10": {
-   "random_bot": 2.2,
+   "random_bot": 2.1,
    "starter_greedy": 3.375
   },
   "d11": {
-   "random_bot": 3.9,
+   "random_bot": 4.2,
    "starter_greedy": 6.3
   },
   "d12": {
