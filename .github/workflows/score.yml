@@ -15,5 +15,5 @@ jobs:
         env: {AOAI_SALT: "${{ secrets.AOAI_SALT }}", CHALLENGES_JSON: "${{ secrets.CHALLENGES_JSON }}"}
       - run: |
           git config user.name "scorer"; git config user.email "scorer@users.noreply.github.com"
-          git add docs
+          git add docs challenges.json
           git diff --cached --quiet || (git commit -m "Update leaderboard" && git push)
