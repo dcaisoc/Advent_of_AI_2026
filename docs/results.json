@@ -1,13 +1,8 @@
 {
- "updated": "2026-12-23",
+ "updated": "2026-11-21",
  "points": {
-  "random_bot": 9,
-  "starter_greedy": 10
+  "random_bot": 0,
+  "starter_greedy": 0
  },
- "scores": {
-  "d01": {
-   "random_bot": 0.7,
-   "starter_greedy": 3.5
-  }
- }
+ "scores": {}
 }
